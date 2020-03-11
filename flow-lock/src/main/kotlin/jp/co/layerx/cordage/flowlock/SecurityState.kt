@@ -11,5 +11,6 @@ data class SecurityState(
     val value: Int,
     val sender: Party,
     val name: String,
+    val locked: Boolean = false,
     override val participants: List<AbstractParty> = listOf(owner, sender)
 ) : ContractState

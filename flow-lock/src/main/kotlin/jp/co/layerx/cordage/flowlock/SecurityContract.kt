@@ -14,6 +14,6 @@ open class SecurityContract: Contract {
 
     sealed class Commands: TypeOnlyCommandData() {
       class IssueSecurity: Commands()
-      class DvP: Commands()
+      class LockSecurity: Commands()
     }
 }

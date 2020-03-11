@@ -32,17 +32,33 @@ class FlowTests {
 
     @Test
     fun `IssueSecurityFlow can issue security`() {
-        val value = 100
-        val name = "security1"
         val party = node.info.chooseIdentity()
         val issuer = issuer.info.legalIdentities.first()
-        // For simplicity, sender is the same as owner
-        val securityState = SecurityState(party, value, issuer, name)
-        val flow = IssueSecurityFlow(securityState)
-        node.startFlow(flow).get()
+        val receiver = issuer
+        val name = "security"
 
+        val securityStates = listOf(
+            SecurityState(party, 200, issuer, name),
+            SecurityState(party, 200, issuer, name),
+            SecurityState(party, 300, issuer, name),
+            SecurityState(party, 400, issuer, name)
+        )
+
+        securityStates.forEach {securityState ->
+            val flow = IssueSecurityFlow(securityState)
+            node.startFlow(flow).get()
+        }
         val page = node.services.vaultService.queryBy(SecurityState::class.java)
-        val data = page.states.first().state.data
-        assert(data == securityState)
+        assert(page.states.size === securityStates.size)
+        val sum = page.states.fold(0) { acc, state -> acc + state.state.data.value }
+        assert(sum === 1100)
+
+        val lockFlow = LockFlow(500, receiver)
+        node.startFlow(lockFlow).get()
+
+        val page2 = node.services.vaultService.queryBy(SecurityState::class.java)
+        page2.states.forEach {
+            println(it.state.data.toString())
+        }
     }
 }
